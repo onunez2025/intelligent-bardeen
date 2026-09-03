@@ -14,26 +14,6 @@ export const CorporateLogin: React.FC = () => {
   const [isManualOpen, setIsManualOpen] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
-  const handleRealMicrosoftLogin = async () => {
-    setIsAuthenticating(true);
-    try {
-      const res = await fetch('/api/auth/microsoft/login');
-      if (res.redirected) {
-        window.location.href = res.url;
-        return;
-      }
-      const data = await res.json();
-      if (data && data.isConfigured === false) {
-        // Si aún no se configuran las variables en Azure AD, iniciar con cuenta corporativa por defecto
-        quickLoginAsSpecialist();
-      }
-    } catch (e) {
-      quickLoginAsSpecialist();
-    } finally {
-      setIsAuthenticating(false);
-    }
-  };
-
   const handleM365SsoLogin = (role: 'IT_SPECIALIST' | 'USER') => {
     setIsAuthenticating(true);
     setTimeout(() => {
@@ -109,11 +89,10 @@ export const CorporateLogin: React.FC = () => {
         {/* Acceso Principal con Microsoft 365 (SSO) */}
         <div className="space-y-3 relative z-10">
           
-          {/* Botón Principal: Microsoft 365 Oficial */}
-          <button
-            onClick={handleRealMicrosoftLogin}
-            disabled={isAuthenticating}
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-[#0073ea] hover:bg-[#0060c0] text-white font-bold text-xs shadow-lg hover:shadow-xl transition-all cursor-pointer group disabled:opacity-50 border border-blue-400/30"
+          {/* Botón Principal: Microsoft 365 Oficial con redirección directa de navegador */}
+          <a
+            href="/api/auth/microsoft/login"
+            className="w-full flex items-center justify-between p-4 rounded-2xl bg-[#0073ea] hover:bg-[#0060c0] text-white font-bold text-xs shadow-lg hover:shadow-xl transition-all cursor-pointer group border border-blue-400/30"
           >
             <div className="flex items-center space-x-3">
               {/* Icono Microsoft 4 Colores */}
@@ -129,7 +108,7 @@ export const CorporateLogin: React.FC = () => {
               </div>
             </div>
             <ArrowRight className="w-4 h-4 text-blue-200 group-hover:translate-x-1 transition-transform" />
-          </button>
+          </a>
 
           <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center pt-2">
             O seleccionar perfil de prueba rápido
