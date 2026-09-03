@@ -4,13 +4,19 @@ import { getMicrosoftAuthUrl } from '@/lib/microsoft_auth';
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'localhost:3000';
-  const protocol = req.headers.get('x-forwarded-proto') || (url.protocol.replace(':', '') || 'http');
-  const redirectUri = `${protocol}://${host}/api/auth/callback/azure-ad`;
+  let protocol = req.headers.get('x-forwarded-proto') || (url.protocol.replace(':', '') || 'http');
+  
+  // Forzar HTTPS en producción y dominios remotos
+  if (host.includes('easypanel.host') || host.includes('azurewebsites.net') || host.includes('.com') || host.includes('.pe')) {
+    protocol = 'https';
+  }
+
+  const baseUrl = process.env.NEXTAUTH_URL || process.env.APP_URL || `${protocol}://${host}`;
+  const redirectUri = `${baseUrl}/api/auth/callback/azure-ad`;
 
   const authUrl = getMicrosoftAuthUrl(redirectUri);
 
   if (!authUrl) {
-    // Si no está configurado Azure AD en variables de entorno, responder con info de configuración
     return NextResponse.json({
       success: false,
       isConfigured: false,
