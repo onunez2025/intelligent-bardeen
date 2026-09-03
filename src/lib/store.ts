@@ -37,7 +37,196 @@ const defaultSettings: SystemSettings = {
   currencySymbol: '$',
   currencyCode: 'USD',
   defaultHourlyRate: 18
-};
+const SEED_PROJECTS: Project[] = [
+  {
+    id: "proj-1788366136843",
+    code: "PROJ-2026-005",
+    name: "Inventario TI",
+    description: "Plataforma web integral para la gestión de activos de TI, control de inventarios, asignaciones de equipos y devoluciones.",
+    category: "WEB_PORTAL",
+    status: "IN_PROGRESS",
+    solutionType: "INTEGRATION_EXISTING",
+    targetSystems: ["SAP", "Microsoft 365"],
+    attachments: [],
+    requesterName: "Samuel Aguirre",
+    requesterEmail: "saguirre@gruposole.com.pe",
+    requesterDepartment: "TI - Infraestructura",
+    specialistId: "user-onunez",
+    specialistName: "Orlando Núñez",
+    startDate: "2026-09-01",
+    targetEndDate: "2026-09-30",
+    repositoryUrl: "https://github.com/onunez2025/InvetarioTI.git",
+    documentationUrl: "",
+    deploymentUrl: "https://gac-sole-inventario-ti.jppsfv.easypanel.host/",
+    estimatedHours: 40,
+    actualHours: 24,
+    hourlyRate: 18,
+    savedHoursMonth: 30,
+    savedMoneyMonth: 540,
+    directCostSavingsYear: 0,
+    roiSummary: "Ahorro estimado de 30 horas/mes ($540/mes) en control de hardware.",
+    manualProgress: 67,
+    aiEstimatedProgress: 67,
+    aiProgressAnalysis: "Superpowers: Se analizaron los planes de implementación y especificaciones del proyecto Inventario TI. 8 tareas completadas de 12.",
+    tasks: [
+      { id: "task-sp-1", projectId: "proj-1788366136843", title: "Configurar proyecto Next.js y variables de entorno", isCompleted: true, order: 1, createdAt: "2026-09-01" },
+      { id: "task-sp-2", projectId: "proj-1788366136843", title: "Conexión y creación de tablas en Azure SQL Server (esquema ti_projects)", isCompleted: true, order: 2, createdAt: "2026-09-01" },
+      { id: "task-sp-3", projectId: "proj-1788366136843", title: "Integración de API Key oficial de DeepSeek", isCompleted: true, order: 3, createdAt: "2026-09-01" },
+      { id: "task-sp-4", projectId: "proj-1788366136843", title: "Implementar receptor de Webhooks para Azure DevOps", isCompleted: false, order: 4, createdAt: "2026-09-01" },
+      { id: "task-sp-5", projectId: "proj-1788366136843", title: "Rediseño de tabla principal estilo Monday con paleta 60-30-10", isCompleted: true, order: 5, createdAt: "2026-09-01" },
+      { id: "task-sp-6", projectId: "proj-1788366136843", title: "Implementación de Diagrama de Gantt mensual con cálculo de avance", isCompleted: true, order: 6, createdAt: "2026-09-01" },
+      { id: "task-sp-7", projectId: "proj-1788366136843", title: "Formulario formal de requerimientos en /solicitud", isCompleted: true, order: 7, createdAt: "2026-09-01" },
+      { id: "task-sp-8", projectId: "proj-1788366136843", title: "Realizar pruebas de aceptación UAT con usuarios de Finanzas", isCompleted: false, order: 8, createdAt: "2026-09-01" },
+      { id: "task-sp-9", projectId: "proj-1788366136843", title: "Autenticación corporativa institucional Microsoft 365", isCompleted: true, order: 9, createdAt: "2026-09-01" },
+      { id: "task-sp-10", projectId: "proj-1788366136843", title: "Catálogo de infraestructura Azure Web App y Azure Repos", isCompleted: true, order: 10, createdAt: "2026-09-01" }
+    ],
+    notes: [],
+    progressLogs: [],
+    createdAt: "2026-09-01T08:00:00Z",
+    updatedAt: "2026-09-02T19:40:00Z"
+  },
+  {
+    id: "proj-1",
+    code: "IA-2026-001",
+    name: "Asistente IA para Clasificación y Extracción de Facturas & OC",
+    description: "Solución basada en LLMs para extraer datos de facturas PDF, validar contra órdenes de compra en SAP y alertar discrepancias automáticamente.",
+    category: "AI_GENAI",
+    status: "IN_PROGRESS",
+    solutionType: "INTEGRATION_EXISTING",
+    targetSystems: ["SAP"],
+    attachments: [],
+    requesterName: "Carlos Mendoza",
+    requesterEmail: "cmendoza@gruposole.com.pe",
+    requesterDepartment: "Finanzas & Contabilidad",
+    specialistId: "user-onunez",
+    specialistName: "Orlando Núñez",
+    startDate: "2026-07-01",
+    targetEndDate: "2026-10-31",
+    repositoryUrl: "https://github.com/onunez2025/invoice-ai-extractor",
+    documentationUrl: "",
+    deploymentUrl: "",
+    estimatedHours: 120,
+    actualHours: 48,
+    hourlyRate: 18,
+    savedHoursMonth: 65,
+    savedMoneyMonth: 1170,
+    directCostSavingsYear: 0,
+    roiSummary: "Automatiza la revisión de facturas mensuales, ahorrando 65 horas hombre al equipo contable.",
+    manualProgress: 50,
+    aiEstimatedProgress: 55,
+    aiProgressAnalysis: "Pipeline OCR y extracción con DeepSeek operativo al 55%.",
+    tasks: [
+      { id: "t1-1", projectId: "proj-1", title: "Diseño de prompts estructurados con DeepSeek", isCompleted: true, order: 1, createdAt: "2026-07-05" },
+      { id: "t1-2", projectId: "proj-1", title: "Creación de API FastAPI para procesamiento en batch", isCompleted: true, order: 2, createdAt: "2026-07-15" },
+      { id: "t1-3", projectId: "proj-1", title: "Módulo de validación contra SAP", isCompleted: false, order: 3, createdAt: "2026-08-10" }
+    ],
+    notes: [],
+    progressLogs: [],
+    createdAt: "2026-07-01T08:00:00Z",
+    updatedAt: "2026-08-30T16:00:00Z"
+  },
+  {
+    id: "proj-2",
+    code: "AUTO-2026-002",
+    name: "Automatización de Conciliación Bancaria y Descarga de Extractos",
+    description: "Robot (RPA) programado para autenticarse en portales bancarios, descargar cartolas en formato Excel/CSV y cruzar contra el libro banco diario.",
+    category: "AUTOMATION_RPA",
+    status: "UAT_TESTING",
+    solutionType: "NEW_DEVELOPMENT",
+    targetSystems: ["SAP", "Punto de Venta"],
+    attachments: [],
+    requesterName: "Mariana Silva",
+    requesterEmail: "msilva@gruposole.com.pe",
+    requesterDepartment: "Tesorería",
+    specialistId: "user-onunez",
+    specialistName: "Orlando Núñez",
+    startDate: "2026-06-15",
+    targetEndDate: "2026-09-15",
+    repositoryUrl: "https://github.com/onunez2025/rpa-bank-reconciliation",
+    documentationUrl: "",
+    deploymentUrl: "",
+    estimatedHours: 90,
+    actualHours: 85,
+    hourlyRate: 18,
+    savedHoursMonth: 40,
+    savedMoneyMonth: 720,
+    directCostSavingsYear: 0,
+    roiSummary: "Elimina 2 horas diarias de descarga manual para el analista de tesorería (40 hrs/mes).",
+    manualProgress: 85,
+    aiEstimatedProgress: 90,
+    aiProgressAnalysis: "Scripts de conciliación al 90%. En validación de casos bordes.",
+    tasks: [
+      { id: "t2-1", projectId: "proj-2", title: "Scripts de descarga automatizada", isCompleted: true, order: 1, createdAt: "2026-06-16" },
+      { id: "t2-2", projectId: "proj-2", title: "Lógica de conciliación automática", isCompleted: true, order: 2, createdAt: "2026-07-02" },
+      { id: "t2-3", projectId: "proj-2", title: "Pruebas UAT en paralelo", isCompleted: false, order: 3, createdAt: "2026-07-25" }
+    ],
+    notes: [],
+    progressLogs: [],
+    createdAt: "2026-06-15T09:00:00Z",
+    updatedAt: "2026-08-29T15:00:00Z"
+  },
+  {
+    id: "proj-4",
+    code: "BI-2026-004",
+    name: "Tablero Analítico de Operaciones Logísticas y Tiempos de Entrega",
+    description: "Dashboard en Power BI integrado con base de datos SQL Server y Beetrack para visualizar KPIs de entregas a tiempo (OTIF).",
+    category: "DATA_BI",
+    status: "DEPLOYED",
+    solutionType: "INTEGRATION_EXISTING",
+    targetSystems: ["Beetrack", "SAP"],
+    attachments: [],
+    requesterName: "Patricia Morales",
+    requesterEmail: "pmorales@gruposole.com.pe",
+    requesterDepartment: "Operaciones & Logística",
+    specialistId: "user-onunez",
+    specialistName: "Orlando Núñez",
+    startDate: "2026-05-01",
+    targetEndDate: "2026-07-31",
+    actualEndDate: "2026-07-28",
+    repositoryUrl: "https://github.com/onunez2025/bi-logistics-pipeline",
+    documentationUrl: "",
+    deploymentUrl: "https://app.powerbi.com",
+    estimatedHours: 70,
+    actualHours: 65,
+    hourlyRate: 18,
+    savedHoursMonth: 30,
+    savedMoneyMonth: 540,
+    directCostSavingsYear: 0,
+    roiSummary: "Ahorro de 30 horas/mes en consolidación manual de Excels.",
+    manualProgress: 100,
+    aiEstimatedProgress: 100,
+    aiProgressAnalysis: "Proyecto desplegado exitosamente en producción con adopción del 100%.",
+    tasks: [
+      { id: "t4-1", projectId: "proj-4", title: "Modelado estrella de datos en SQL Server", isCompleted: true, order: 1, createdAt: "2026-05-05" },
+      { id: "t4-2", projectId: "proj-4", title: "Diseño de reporte ejecutivo Power BI", isCompleted: true, order: 2, createdAt: "2026-05-20" },
+      { id: "t4-3", projectId: "proj-4", title: "Capacitación a jefes de turno y pase a producción", isCompleted: true, order: 3, createdAt: "2026-06-15" }
+    ],
+    notes: [],
+    progressLogs: [],
+    createdAt: "2026-05-01T08:00:00Z",
+    updatedAt: "2026-07-28T17:00:00Z"
+  }
+];
+
+const SEED_REQUESTS: UserRequest[] = [
+  {
+    id: "req-1",
+    code: "SOL-2026-010",
+    title: "Chatbot con IA para consultas de políticas y beneficios de la empresa",
+    description: "Los colaboradores consultan frecuentemente normativas y beneficios. Queremos un bot con IA que responda citando la documentación oficial.",
+    businessPain: "El equipo de personas pasa más de 15 horas a la semana respondiendo consultas repetitivas.",
+    estimatedImpact: "Ahorro de 60 hrs/mes en RRHH y respuesta inmediata 24/7 para los colaboradores.",
+    urgency: "HIGH",
+    status: "REVIEWING",
+    requesterName: "Andrea Vega",
+    requesterEmail: "avega@gruposole.com.pe",
+    requesterDepartment: "Recursos Humanos",
+    aiCategory: "AI_GENAI",
+    aiAnalysis: "Excelente candidato para arquitectura RAG con base vectorial e integración a Microsoft Teams.",
+    createdAt: "2026-08-28T09:30:00Z",
+    updatedAt: "2026-08-28T10:15:00Z"
+  }
+];
 
 function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -71,10 +260,19 @@ export class ProjectStore {
   static getProjects(): Project[] {
     try {
       ensureDataDir();
+      if (!fs.existsSync(PROJECTS_FILE)) {
+        fs.writeFileSync(PROJECTS_FILE, JSON.stringify(SEED_PROJECTS, null, 2), 'utf-8');
+        return SEED_PROJECTS;
+      }
       const content = fs.readFileSync(PROJECTS_FILE, 'utf-8');
-      return JSON.parse(content);
+      const parsed = JSON.parse(content);
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        fs.writeFileSync(PROJECTS_FILE, JSON.stringify(SEED_PROJECTS, null, 2), 'utf-8');
+        return SEED_PROJECTS;
+      }
+      return parsed;
     } catch (e) {
-      return [];
+      return SEED_PROJECTS;
     }
   }
 
@@ -201,10 +399,19 @@ export class ProjectStore {
   static getRequests(): UserRequest[] {
     try {
       ensureDataDir();
+      if (!fs.existsSync(REQUESTS_FILE)) {
+        fs.writeFileSync(REQUESTS_FILE, JSON.stringify(SEED_REQUESTS, null, 2), 'utf-8');
+        return SEED_REQUESTS;
+      }
       const content = fs.readFileSync(REQUESTS_FILE, 'utf-8');
-      return JSON.parse(content);
+      const parsed = JSON.parse(content);
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        fs.writeFileSync(REQUESTS_FILE, JSON.stringify(SEED_REQUESTS, null, 2), 'utf-8');
+        return SEED_REQUESTS;
+      }
+      return parsed;
     } catch (e) {
-      return [];
+      return SEED_REQUESTS;
     }
   }
 
