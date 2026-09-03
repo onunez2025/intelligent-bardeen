@@ -32,7 +32,9 @@ import {
   Shield,
   Layers2,
   Workflow,
-  PlusCircle
+  PlusCircle,
+  Edit3,
+  AlertTriangle
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -44,6 +46,84 @@ export default function SolicitudPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [createdTicket, setCreatedTicket] = useState<string | null>(null);
+
+  // Estados para Edición / Subsanación de Requerimientos
+  const [editingRequest, setEditingRequest] = useState<UserRequest | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editBusinessPain, setEditBusinessPain] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editEstimatedImpact, setEditEstimatedImpact] = useState('');
+  const [editSolutionType, setEditSolutionType] = useState<SolutionType>('INTEGRATION_EXISTING');
+  const [editSelectedSystems, setEditSelectedSystems] = useState<string[]>([]);
+  const [editAttachments, setEditAttachments] = useState<AttachedFile[]>([]);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [isUploadingEditFile, setIsUploadingEditFile] = useState(false);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
+
+  const openEditModal = (req: UserRequest) => {
+    setEditingRequest(req);
+    setEditTitle(req.title);
+    setEditBusinessPain(req.businessPain);
+    setEditDescription(req.description);
+    setEditEstimatedImpact(req.estimatedImpact || '');
+    setEditSolutionType(req.solutionType);
+    setEditSelectedSystems(req.targetSystems || []);
+    setEditAttachments(req.attachments || []);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingRequest) return;
+    setIsSavingEdit(true);
+    try {
+      const res = await fetch(`/api/requests/${editingRequest.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editTitle,
+          businessPain: editBusinessPain,
+          description: editDescription,
+          estimatedImpact: editEstimatedImpact,
+          solutionType: editSolutionType,
+          targetSystems: editSelectedSystems,
+          attachments: editAttachments,
+          status: editingRequest.status === 'OBSERVED' ? 'REVIEWING' : editingRequest.status
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRequests(prev => prev.map(r => r.id === editingRequest.id ? data.data : r));
+        setEditingRequest(null);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  const handleUploadEditFile = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setIsUploadingEditFile(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.file) {
+            setEditAttachments(prev => [...prev, data.file]);
+          }
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsUploadingEditFile(false);
+      if (editFileInputRef.current) editFileInputRef.current.value = '';
+    }
+  };
 
   // Formulario con autocompletado del usuario autenticado
   const [title, setTitle] = useState('');
@@ -219,10 +299,12 @@ export default function SolicitudPage() {
     switch (status) {
       case 'CONVERTED':
         return <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-[#00c875]/15 text-[#00854d]">Proyecto Activo en TI</span>;
+      case 'OBSERVED':
+        return <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-[#fdab3d]/20 text-[#b26200] border border-[#fdab3d]/40 flex items-center space-x-1"><AlertTriangle className="w-3.5 h-3.5 text-[#e2445c]" /><span>Observado por TI</span></span>;
       case 'REVIEWING':
-        return <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-[#fdab3d]/15 text-[#b26b00]">En Evaluación Técnica</span>;
+        return <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-[#0073ea]/15 text-[#0073ea]">En Evaluación Técnica</span>;
       default:
-        return <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-[#0073ea]/15 text-[#0073ea]">Recibido</span>;
+        return <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-100 text-slate-700">Recibido</span>;
     }
   };
 
@@ -676,6 +758,29 @@ export default function SolicitudPage() {
                       {getStatusBadge(req.status)}
                     </div>
 
+                    {/* Banner si el requerimiento fue OBSERVADO por TI */}
+                    {req.status === 'OBSERVED' && req.itObservations && (
+                      <div className="bg-[#fdab3d]/15 border border-[#fdab3d]/40 rounded-xl p-3.5 space-y-1.5">
+                        <div className="flex items-center space-x-1.5 font-bold text-xs text-[#b26200]">
+                          <AlertTriangle className="w-4 h-4 text-[#e2445c]" />
+                          <span>Observación de TI (Requiere Subsanación / Aclaración):</span>
+                        </div>
+                        <p className="text-xs text-slate-800 leading-relaxed font-medium pl-5">
+                          {req.itObservations}
+                        </p>
+                        <div className="pt-1 pl-5">
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(req)}
+                            className="flex items-center space-x-1.5 bg-[#fdab3d] hover:bg-[#e09834] text-slate-900 font-bold px-3 py-1.5 rounded-lg text-xs shadow-xs transition-colors cursor-pointer"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                            <span>Subsanar y Reenviar Requerimiento</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     <p className="text-xs text-slate-600 leading-relaxed">
                       {req.businessPain}
                     </p>
@@ -691,14 +796,185 @@ export default function SolicitudPage() {
                       </div>
                     )}
 
+                    {/* Archivos Adjuntos */}
+                    {req.attachments && req.attachments.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {req.attachments.map((file) => (
+                          <a
+                            key={file.id}
+                            href={file.url || '#'}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200 hover:border-[#0073ea] text-[11px] font-semibold flex items-center space-x-1 transition-colors text-slate-700"
+                          >
+                            {getFileIcon(file.name)}
+                            <span className="truncate max-w-[150px]">{file.name}</span>
+                            <Download className="w-2.5 h-2.5 text-slate-400" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-100 pt-2">
                       <span>Registrado el: {req.createdAt?.split('T')[0]}</span>
-                      <span>{req.attachments?.length || 0} archivo(s) de respaldo adjunto(s)</span>
+                      <div className="flex items-center space-x-2">
+                        <span>{req.attachments?.length || 0} archivo(s)</span>
+                        <button
+                          type="button"
+                          onClick={() => openEditModal(req)}
+                          className="flex items-center space-x-1 text-[#0073ea] hover:text-[#0060c0] font-bold text-xs cursor-pointer hover:underline"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span>Editar Requerimiento</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* MODAL PARA EDITAR / SUBSANAR REQUERIMIENTO */}
+        {editingRequest && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-2xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center space-x-2">
+                  <div className="p-2 rounded-xl bg-[#0073ea]/10 text-[#0073ea]">
+                    <Edit3 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base text-slate-900">Editar Requerimiento</h3>
+                    <p className="text-xs text-slate-500 font-mono">{editingRequest.code} • {editingRequest.requesterDepartment}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingRequest(null)}
+                  className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {editingRequest.status === 'OBSERVED' && editingRequest.itObservations && (
+                <div className="p-3 bg-[#fdab3d]/15 border border-[#fdab3d]/40 rounded-xl text-xs text-slate-800 space-y-1">
+                  <span className="font-bold text-[#b26200] flex items-center space-x-1">
+                    <AlertTriangle className="w-3.5 h-3.5 text-[#e2445c]" />
+                    <span>Observación realizada por TI:</span>
+                  </span>
+                  <p className="leading-relaxed pl-4">{editingRequest.itObservations}</p>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">Nombre / Título de la Iniciativa</label>
+                  <input
+                    type="text"
+                    value={editTitle}
+                    onChange={e => setEditTitle(e.target.value)}
+                    className="w-full bg-[#f8f9fc] border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:bg-white focus:border-[#0073ea] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">Problemática Actual & Justificación</label>
+                  <textarea
+                    rows={3}
+                    value={editBusinessPain}
+                    onChange={e => setEditBusinessPain(e.target.value)}
+                    className="w-full bg-[#f8f9fc] border border-slate-200 rounded-xl p-3 text-xs text-slate-900 focus:bg-white focus:border-[#0073ea] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">Alcance & Solución Propuesta</label>
+                  <textarea
+                    rows={3}
+                    value={editDescription}
+                    onChange={e => setEditDescription(e.target.value)}
+                    className="w-full bg-[#f8f9fc] border border-slate-200 rounded-xl p-3 text-xs text-slate-900 focus:bg-white focus:border-[#0073ea] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">Estimación de Beneficio / Horas de Ahorro</label>
+                  <input
+                    type="text"
+                    value={editEstimatedImpact}
+                    onChange={e => setEditEstimatedImpact(e.target.value)}
+                    className="w-full bg-[#f8f9fc] border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:bg-white focus:border-[#0073ea] focus:outline-none"
+                  />
+                </div>
+
+                {/* Archivos Adjuntos */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-bold text-slate-800">Archivos y Documentos de Respaldo</label>
+                    <input
+                      type="file"
+                      ref={editFileInputRef}
+                      multiple
+                      className="hidden"
+                      onChange={(e) => handleUploadEditFile(e.target.files)}
+                    />
+                    <button
+                      type="button"
+                      disabled={isUploadingEditFile}
+                      onClick={() => editFileInputRef.current?.click()}
+                      className="flex items-center space-x-1 text-xs font-bold text-[#0073ea] hover:underline cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{isUploadingEditFile ? 'Subiendo...' : '+ Adjuntar nuevo archivo'}</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-1.5 pt-1">
+                    {editAttachments.map((file) => (
+                      <div
+                        key={file.id}
+                        className="flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                      >
+                        <div className="flex items-center space-x-2 truncate">
+                          {getFileIcon(file.name)}
+                          <span className="font-semibold text-slate-800 truncate">{file.name}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setEditAttachments(prev => prev.filter(f => f.id !== file.id))}
+                          className="text-slate-400 hover:text-red-500 p-1 cursor-pointer"
+                          title="Eliminar archivo"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditingRequest(null)}
+                  className="px-4 py-2 border border-slate-200 text-xs font-bold text-slate-600 rounded-xl hover:bg-slate-50 cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  disabled={isSavingEdit}
+                  onClick={handleSaveEdit}
+                  className="flex items-center space-x-1.5 bg-[#0073ea] hover:bg-[#0060c0] text-white text-xs font-bold px-5 py-2 rounded-xl transition-all cursor-pointer shadow-md disabled:opacity-50"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{isSavingEdit ? 'Guardando...' : 'Guardar y Reenviar a TI'}</span>
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
