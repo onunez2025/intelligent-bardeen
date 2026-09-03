@@ -21,7 +21,7 @@ export type SolutionType = 'NEW_SOLUTION' | 'INTEGRATION_EXISTING';
 
 export type UrgencyLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
-export type RequestStatus = 'SUBMITTED' | 'REVIEWING' | 'APPROVED' | 'CONVERTED' | 'REJECTED';
+export type RequestStatus = 'SUBMITTED' | 'REVIEWING' | 'OBSERVED' | 'APPROVED' | 'CONVERTED' | 'REJECTED';
 
 export interface AttachedFile {
   id: string;
@@ -175,6 +175,10 @@ export interface UserRequest {
   aiCategory?: ProjectCategory;
   aiAnalysis?: string;
   aiRecommendedQuestions?: string[];
+  
+  itObservations?: string;
+  itObservedAt?: string;
+  itObservedBy?: string;
   
   projectId?: string;
   createdAt: string;

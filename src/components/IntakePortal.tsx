@@ -20,7 +20,10 @@ import {
   FileImage,
   File,
   X,
-  Download
+  Download,
+  AlertTriangle,
+  MessageSquare,
+  Edit3
 } from 'lucide-react';
 
 interface IntakePortalProps {
@@ -39,6 +42,61 @@ export const IntakePortal: React.FC<IntakePortalProps> = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  // Observaciones de TI
+  const [observingReqId, setObservingReqId] = useState<string | null>(null);
+  const [observationText, setObservationText] = useState('');
+  const [isSubmittingObservation, setIsSubmittingObservation] = useState(false);
+  const [localRequests, setLocalRequests] = useState<UserRequest[]>(requests);
+
+  React.useEffect(() => {
+    setLocalRequests(requests);
+  }, [requests]);
+
+  const handleSaveObservation = async (reqId: string) => {
+    if (!observationText.trim()) return;
+    setIsSubmittingObservation(true);
+    try {
+      const res = await fetch(`/api/requests/${reqId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'OBSERVED',
+          itObservations: observationText,
+          itObservedAt: new Date().toISOString(),
+          itObservedBy: 'Especialista TI (Orlando Núñez)'
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setLocalRequests(prev => prev.map(r => r.id === reqId ? data.data : r));
+        setObservingReqId(null);
+        setObservationText('');
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSubmittingObservation(false);
+    }
+  };
+
+  const handleResolveObservation = async (reqId: string) => {
+    try {
+      const res = await fetch(`/api/requests/${reqId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'REVIEWING'
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setLocalRequests(prev => prev.map(r => r.id === reqId ? data.data : r));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   // Formulario
   const [title, setTitle] = useState('');
@@ -412,7 +470,7 @@ export const IntakePortal: React.FC<IntakePortalProps> = ({
           </div>
 
           <div className="space-y-3 overflow-y-auto max-h-[600px] pr-1">
-            {requests.map(req => (
+            {localRequests.map(req => (
               <div
                 key={req.id}
                 className="p-4 rounded-xl bg-[#f8f9fc] border border-[#e6ebf5] hover:border-[#0073ea] transition-all"
@@ -424,12 +482,83 @@ export const IntakePortal: React.FC<IntakePortalProps> = ({
                     </span>
                     <span className="text-xs font-bold text-[#323338]">{req.requesterDepartment}</span>
                     {getUrgencyBadge(req.urgency)}
+                    {req.status === 'OBSERVED' && (
+                      <span className="px-2 py-0.5 rounded-full font-bold text-[10px] bg-[#fdab3d]/20 text-[#b26200] border border-[#fdab3d]/40 flex items-center space-x-1">
+                        <AlertTriangle className="w-3 h-3 text-[#e2445c]" />
+                        <span>Observado por TI</span>
+                      </span>
+                    )}
                   </div>
                   <span className="text-[11px] text-[#676879]">{req.createdAt.split('T')[0]}</span>
                 </div>
 
                 <h4 className="text-xs font-bold text-[#323338] mb-1">{req.title}</h4>
                 <p className="text-xs text-[#676879] leading-relaxed mb-2">{req.description}</p>
+
+                {/* Banner de Observación de TI */}
+                {req.status === 'OBSERVED' && req.itObservations && (
+                  <div className="bg-[#fdab3d]/15 border border-[#fdab3d]/40 rounded-xl p-3 text-xs mb-3 space-y-1">
+                    <div className="flex items-center space-x-1.5 font-bold text-[#b26200]">
+                      <AlertTriangle className="w-3.5 h-3.5 text-[#e2445c]" />
+                      <span>Observación de TI (Requiere Aclaración o Subsanación):</span>
+                    </div>
+                    <p className="text-slate-800 text-[11px] leading-relaxed whitespace-pre-line pl-5 font-medium">
+                      {req.itObservations}
+                    </p>
+                    <div className="flex items-center justify-between pt-1 pl-5 text-[10px] text-slate-500">
+                      <span>Emitido por: {req.itObservedBy || 'Especialista TI'}</span>
+                      {userRole === 'USER' && (
+                        <button
+                          type="button"
+                          onClick={() => handleResolveObservation(req.id)}
+                          className="font-bold text-[#0073ea] hover:underline cursor-pointer flex items-center space-x-1"
+                        >
+                          <CheckCircle2 className="w-3 h-3 text-[#00c875]" />
+                          <span>Marcar como Subsanado</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Formulario Inline para Registrar Observación */}
+                {observingReqId === req.id && (
+                  <div className="bg-[#fdab3d]/10 border border-[#fdab3d]/40 rounded-xl p-3 mb-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-[#b26200] flex items-center space-x-1">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        <span>Emitir Observación Técnica / Solicitar Aclaración</span>
+                      </span>
+                      <button onClick={() => setObservingReqId(null)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <textarea
+                      rows={3}
+                      value={observationText}
+                      onChange={e => setObservationText(e.target.value)}
+                      placeholder="Ej: Falta adjuntar el formato de Excel de muestra o aclarar si se requiere integración con SAP PRD o QAS..."
+                      className="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs text-slate-800 focus:border-[#fdab3d] focus:outline-none"
+                    />
+                    <div className="flex justify-end space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => setObservingReqId(null)}
+                        className="px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-200/50 rounded-lg cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isSubmittingObservation}
+                        onClick={() => handleSaveObservation(req.id)}
+                        className="px-3 py-1 text-xs font-bold bg-[#fdab3d] hover:bg-[#e09834] text-slate-900 rounded-lg transition-colors cursor-pointer shadow-xs disabled:opacity-50"
+                      >
+                        {isSubmittingObservation ? 'Guardando...' : 'Registrar Observación'}
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Sistemas */}
                 {req.targetSystems && req.targetSystems.length > 0 && (
@@ -498,17 +627,32 @@ export const IntakePortal: React.FC<IntakePortalProps> = ({
                   </span>
 
                   {userRole === 'IT_SPECIALIST' && req.status !== 'CONVERTED' ? (
-                    <button
-                      onClick={() => onConvertRequestToProject(req.id)}
-                      className="flex items-center space-x-1 bg-[#0073ea] hover:bg-[#0060c0] text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow-xs transition-colors cursor-pointer"
-                    >
-                      <FileCheck className="w-3.5 h-3.5" />
-                      <span>Convertir a Proyecto TI</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setObservingReqId(observingReqId === req.id ? null : req.id);
+                          setObservationText(req.itObservations || '');
+                        }}
+                        className="flex items-center space-x-1 bg-white border border-[#fdab3d] text-[#b26200] hover:bg-[#fdab3d]/10 font-bold px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer shadow-2xs"
+                      >
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        <span>{req.status === 'OBSERVED' ? 'Editar Observación' : 'Observar'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => onConvertRequestToProject(req.id)}
+                        className="flex items-center space-x-1 bg-[#0073ea] hover:bg-[#0060c0] text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow-xs transition-colors cursor-pointer"
+                      >
+                        <FileCheck className="w-3.5 h-3.5" />
+                        <span>Convertir a Proyecto TI</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
                   ) : (
                     <span className="px-2.5 py-0.5 rounded-full font-bold text-[11px] bg-[#00c875]/15 text-[#00854d]">
-                      {req.status === 'CONVERTED' ? 'Convertido a Proyecto Activo' : 'En Evaluación'}
+                      {req.status === 'CONVERTED' ? 'Convertido a Proyecto Activo' : (req.status === 'OBSERVED' ? 'Observado por TI' : 'En Evaluación')}
                     </span>
                   )}
                 </div>

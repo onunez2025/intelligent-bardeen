@@ -605,7 +605,7 @@ export class ProjectStore {
     }
   }
 
-  private static async syncRequestToSqlServer(r: UserRequest) {
+  public static async syncRequestToSqlServer(r: UserRequest) {
     try {
       const pool = await getSqlPool();
       await pool.request()
