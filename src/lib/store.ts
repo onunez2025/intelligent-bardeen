@@ -37,6 +37,8 @@ const defaultSettings: SystemSettings = {
   currencySymbol: '$',
   currencyCode: 'USD',
   defaultHourlyRate: 18
+};
+
 const SEED_PROJECTS: Project[] = [
   {
     id: "proj-1788366136843",
@@ -132,7 +134,7 @@ const SEED_PROJECTS: Project[] = [
     description: "Robot (RPA) programado para autenticarse en portales bancarios, descargar cartolas en formato Excel/CSV y cruzar contra el libro banco diario.",
     category: "AUTOMATION_RPA",
     status: "UAT_TESTING",
-    solutionType: "NEW_DEVELOPMENT",
+    solutionType: "NEW_SOLUTION",
     targetSystems: ["SAP", "Punto de Venta"],
     attachments: [],
     requesterName: "Mariana Silva",
@@ -218,6 +220,9 @@ const SEED_REQUESTS: UserRequest[] = [
     estimatedImpact: "Ahorro de 60 hrs/mes en RRHH y respuesta inmediata 24/7 para los colaboradores.",
     urgency: "HIGH",
     status: "REVIEWING",
+    solutionType: "NEW_SOLUTION",
+    targetSystems: ["Microsoft 365"],
+    attachments: [],
     requesterName: "Andrea Vega",
     requesterEmail: "avega@gruposole.com.pe",
     requesterDepartment: "Recursos Humanos",
