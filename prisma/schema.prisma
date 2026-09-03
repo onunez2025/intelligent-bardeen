@@ -1,0 +1,137 @@
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+  schemas  = ["ti_projects", "dbo"]
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+model User {
+  id          String   @id @default(cuid())
+  name        String?
+  email       String   @unique
+  role        String   @default("USER")
+  department  String?
+  createdAt   DateTime @default(now())
+
+  @@schema("ti_projects")
+}
+
+model Request {
+  id                  String   @id @default(cuid())
+  code                String   @unique
+  title               String
+  description         String   @db.NVarChar(Max)
+  businessPain        String?  @db.NVarChar(Max)
+  estimatedImpact     String?
+  urgency             String   @default("MEDIUM")
+  status              String   @default("SUBMITTED")
+  
+  solutionType        String   @default("INTEGRATION_EXISTING")
+  targetSystems       String?  @db.NVarChar(Max) // JSON array string
+  attachments         String?  @db.NVarChar(Max) // JSON array string
+  
+  requesterName       String
+  requesterEmail      String
+  requesterDepartment String?
+  
+  aiCategory          String?
+  aiAnalysis          String?  @db.NVarChar(Max)
+  projectId           String?  @unique
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@schema("ti_projects")
+}
+
+model Project {
+  id                  String   @id @default(cuid())
+  code                String   @unique
+  name                String
+  description         String   @db.NVarChar(Max)
+  category            String   @default("OTHER")
+  status              String   @default("BACKLOG")
+  
+  solutionType        String   @default("INTEGRATION_EXISTING")
+  targetSystems       String?  @db.NVarChar(Max) // JSON array string
+  attachments         String?  @db.NVarChar(Max) // JSON array string
+  
+  requesterName       String
+  requesterEmail      String
+  requesterDepartment String?
+  
+  specialistId        String?
+  specialistName      String?
+  
+  startDate           DateTime?
+  targetEndDate       DateTime?
+  actualEndDate       DateTime?
+  
+  repositoryUrl       String?
+  documentationUrl    String?
+  deploymentUrl       String?
+  
+  estimatedHours      Float    @default(0)
+  actualHours         Float    @default(0)
+  hourlyRate          Float    @default(18)
+  savedHoursMonth     Float    @default(0)
+  savedMoneyMonth     Float    @default(0)
+  directCostSavingsYear Float? @default(0)
+  roiSummary          String?  @db.NVarChar(Max)
+  
+  manualProgress      Int      @default(0)
+  aiEstimatedProgress Int?
+  aiProgressAnalysis  String?  @db.NVarChar(Max)
+  lastAiEvaluationAt  DateTime?
+
+  requestId           String?  @unique
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  tasks               Task[]
+  notes               ProjectNote[]
+  progressLogs        ProgressLog[]
+
+  @@schema("ti_projects")
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  isCompleted Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@schema("ti_projects")
+}
+
+model ProjectNote {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  content     String   @db.NVarChar(Max)
+  author      String
+  createdAt   DateTime @default(now())
+
+  @@schema("ti_projects")
+}
+
+model ProgressLog {
+  id              String   @id @default(cuid())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  repoNotes       String   @db.NVarChar(Max)
+  aiProgressScore Int
+  aiFeedback      String   @db.NVarChar(Max)
+  createdAt       DateTime @default(now())
+
+  @@schema("ti_projects")
+}

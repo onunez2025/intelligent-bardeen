@@ -1,0 +1,80 @@
+# =========================================================================
+# Azure DevOps CI/CD Pipeline - TI Innovation Portal
+# Plataforma de Gestión de Proyectos de TI & IA - Grupo Sole
+# =========================================================================
+
+trigger:
+  branches:
+    include:
+      - main
+      - master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  nodeVersion: '20.x'
+  webAppName: 'app-ti-innovation-portal' # Reemplazar con el nombre de tu Azure Web App
+
+stages:
+  # -------------------------------------------------------------
+  # STAGE 1: Build & Package
+  # -------------------------------------------------------------
+  - stage: Build
+    displayName: 'Compilar y Empaquetar Aplicación'
+    jobs:
+      - job: BuildJob
+        displayName: 'Build Next.js'
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(nodeVersion)
+            displayName: 'Instalar Node.js $(nodeVersion)'
+
+          - script: |
+              npm ci
+            displayName: 'Instalar dependencias con npm ci'
+
+          - script: |
+              npm run build
+            displayName: 'Compilar proyecto Next.js (npm run build)'
+
+          - task: ArchiveFiles@2
+            displayName: 'Generar ZIP de Despliegue'
+            inputs:
+              rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+              replaceExistingArchive: true
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publicar Artefacto de Build'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+              ArtifactName: 'drop'
+              publishLocation: 'Container'
+
+  # -------------------------------------------------------------
+  # STAGE 2: Deploy to Azure App Service
+  # -------------------------------------------------------------
+  - stage: Deploy
+    displayName: 'Desplegar en Azure Web App'
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - deployment: DeployWeb
+        displayName: 'Despliegue a Producción'
+        environment: 'production'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureWebApp@1
+                  displayName: 'Desplegar en Azure App Service'
+                  inputs:
+                    azureSubscription: 'Azure-Subscription-ServiceConnection' # Tu conexión de servicio en Azure DevOps
+                    appType: 'webAppLinux'
+                    appName: $(webAppName)
+                    package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
+                    startUpCommand: 'node_modules/.bin/next start -p 8080'
