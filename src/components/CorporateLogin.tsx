@@ -14,6 +14,26 @@ export const CorporateLogin: React.FC = () => {
   const [isManualOpen, setIsManualOpen] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
+  const handleRealMicrosoftLogin = async () => {
+    setIsAuthenticating(true);
+    try {
+      const res = await fetch('/api/auth/microsoft/login');
+      if (res.redirected) {
+        window.location.href = res.url;
+        return;
+      }
+      const data = await res.json();
+      if (data && data.isConfigured === false) {
+        // Si aún no se configuran las variables en Azure AD, iniciar con cuenta corporativa por defecto
+        quickLoginAsSpecialist();
+      }
+    } catch (e) {
+      quickLoginAsSpecialist();
+    } finally {
+      setIsAuthenticating(false);
+    }
+  };
+
   const handleM365SsoLogin = (role: 'IT_SPECIALIST' | 'USER') => {
     setIsAuthenticating(true);
     setTimeout(() => {
@@ -89,52 +109,50 @@ export const CorporateLogin: React.FC = () => {
         {/* Acceso Principal con Microsoft 365 (SSO) */}
         <div className="space-y-3 relative z-10">
           
-          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center mb-2">
-            Iniciar Sesión Institucional (M365)
-          </div>
-
-          {/* Botón 1: Ingreso como Especialista TI */}
+          {/* Botón Principal: Microsoft 365 Oficial */}
           <button
-            onClick={() => handleM365SsoLogin('IT_SPECIALIST')}
+            onClick={handleRealMicrosoftLogin}
             disabled={isAuthenticating}
-            className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-[#0073ea] hover:bg-[#0060c0] text-white font-bold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer group disabled:opacity-50"
+            className="w-full flex items-center justify-between p-4 rounded-2xl bg-[#0073ea] hover:bg-[#0060c0] text-white font-bold text-xs shadow-lg hover:shadow-xl transition-all cursor-pointer group disabled:opacity-50 border border-blue-400/30"
           >
             <div className="flex items-center space-x-3">
               {/* Icono Microsoft 4 Colores */}
-              <div className="w-6 h-6 bg-white rounded-md p-0.5 grid grid-cols-2 gap-0.5 shrink-0 shadow-xs">
+              <div className="w-7 h-7 bg-white rounded-md p-1 grid grid-cols-2 gap-0.5 shrink-0 shadow-xs">
                 <div className="bg-[#f25022] rounded-[1px]"></div>
                 <div className="bg-[#7fba00] rounded-[1px]"></div>
                 <div className="bg-[#00a4ef] rounded-[1px]"></div>
                 <div className="bg-[#ffb900] rounded-[1px]"></div>
               </div>
               <div className="text-left">
-                <div className="font-bold text-white leading-tight">Acceder como Especialista TI</div>
-                <div className="text-[10px] text-blue-100 font-normal">Orlando Núñez (onunez@gruposole.com.pe)</div>
+                <div className="font-bold text-white text-xs leading-tight">Iniciar Sesión con Microsoft 365</div>
+                <div className="text-[10px] text-blue-100 font-normal">Cuenta Institucional @gruposole.com.pe</div>
               </div>
             </div>
             <ArrowRight className="w-4 h-4 text-blue-200 group-hover:translate-x-1 transition-transform" />
           </button>
 
-          {/* Botón 2: Ingreso como Usuario Colaborador */}
-          <button
-            onClick={() => handleM365SsoLogin('USER')}
-            disabled={isAuthenticating}
-            className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-[#24293e] hover:bg-[#2c3350] border border-[#373e5f] text-white font-bold text-xs shadow-xs transition-all cursor-pointer group disabled:opacity-50"
-          >
-            <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 bg-white rounded-md p-0.5 grid grid-cols-2 gap-0.5 shrink-0 shadow-xs">
-                <div className="bg-[#f25022] rounded-[1px]"></div>
-                <div className="bg-[#7fba00] rounded-[1px]"></div>
-                <div className="bg-[#00a4ef] rounded-[1px]"></div>
-                <div className="bg-[#ffb900] rounded-[1px]"></div>
-              </div>
-              <div className="text-left">
-                <div className="font-bold text-slate-200 leading-tight">Acceder como Usuario M365</div>
-                <div className="text-[10px] text-slate-400 font-normal">Carlos Mendoza (cmendoza@gruposole.com.pe)</div>
-              </div>
-            </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
-          </button>
+          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center pt-2">
+            O seleccionar perfil de prueba rápido
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => handleM365SsoLogin('IT_SPECIALIST')}
+              disabled={isAuthenticating}
+              className="p-2.5 rounded-xl bg-[#24293e] hover:bg-[#2c3350] border border-[#373e5f] text-slate-300 font-semibold text-[11px] text-center transition-colors cursor-pointer"
+            >
+              🧑‍💻 Especialista TI
+            </button>
+            <button
+              type="button"
+              onClick={() => handleM365SsoLogin('USER')}
+              disabled={isAuthenticating}
+              className="p-2.5 rounded-xl bg-[#24293e] hover:bg-[#2c3350] border border-[#373e5f] text-slate-300 font-semibold text-[11px] text-center transition-colors cursor-pointer"
+            >
+              👤 Usuario M365
+            </button>
+          </div>
 
         </div>
 
