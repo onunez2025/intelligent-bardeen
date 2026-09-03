@@ -1,0 +1,3 @@
+# Grupo Sole - TI Innovation Portal
+User-agent: *
+Allow: /
